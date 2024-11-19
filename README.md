@@ -86,23 +86,146 @@ df['REB_EFF'] = (df['OREB'] + df['DREB']) / df['Total_Rebounds_Available']
 ## 2. Exploratory Data Analysis (EDA)
 **Objective:** Understanding patterns and trends in the data.
 
-**Analysis Ideas:**
 **Performance Trends:**
-* How have key metrics (e.g., FG%, 3P%, REB, AST) changed from 2012 to 2024?
-* Comparing the evolution of player performance in regular seasons vs. playoffs.
-  
-**Team Analysis:**
-* Identifying the top-performing teams based on cumulative stats like total points, rebounds, and assists.
-* Evaluating how team strategies (e.g., reliance on 3-point shooting) evolved over time.
-  
-**Player Insights:**
-* Ranking players by PPG, REB, AST, and other key stats per year.
-* Correlate individual stats with their team’s winning percentage.
-* Highlighting overachievers (players with high Efficiency Rating (EFF) in fewer minutes played).
+1. How have key metrics (e.g., FG%, 3P%, REB, AST) changed from 2012 to 2024?
+To analyze how key metrics (e.g., FG%, 3P%, REB, AST) have changed over the years from 2012 to 2024, we will:
 
-**Season Comparison:**
-* Comparing average stats between regular season and playoffs.
-* Identifying players who consistently outperform during playoffs.
-Tools: Python (Pandas, Matplotlib, Seaborn), SQL.
-Deliverables:
-EDA visuals (e.g., line plots for trends, heatmaps for correlations, bar charts for top players/teams).
+* Group Data by Year: Aggregate the metrics by the YEAR column.
+* Calculate Mean or Median: Compute the yearly average or median for each key metric to observe trends.
+* Plot Trends: Visualize the trends over time for better understanding.
+```python
+# Creating new coloumns for FG% and 3P%
+nf['FG%'] = (nf['FGM'] / nf['FGA']) * 100
+nf['3P%'] = (nf['FG3M'] / nf['FG3A']) * 100
+
+#Ensuring start year should be numeric
+nf['START_YEAR'] = pd.to_numeric(nf['START_YEAR'], errors='coerce')
+
+#Grouping by start year and calulcating mean
+metrics = ['FG%', '3P%', 'REB', 'AST']
+yearly_trends = nf.groupby('START_YEAR')[metrics].mean().reset_index()
+
+#Plotting the trend
+import matplotlib.pyplot as plt
+plt.figure(figsize=(12, 6))
+for metric in metrics:
+    plt.plot(yearly_trends['START_YEAR'], yearly_trends[metric], label=metric)
+
+# Adding titles and labels
+plt.title("Yearly Trends of Key Metrics (2012-2024)", fontsize=16)
+plt.xlabel("Year", fontsize=12)
+plt.ylabel("Average Value", fontsize=12)
+plt.legend(title="Metrics", fontsize=10)
+plt.grid(alpha=0.3)
+plt.show()
+```
+![Yearly trends of key metrics (2012-2024)](https://github.com/user-attachments/assets/eff13562-fc8b-4a6f-854f-01cbbc25fdc9)
+
+2.  Compare the evolution of player performance in regular seasons vs. playoffs
+* Calculating the yearly trends for key metrics (e.g., PTS, AST, REB, FG%)
+* Calculating Separately for Regular Season and Playoffs
+```python
+# Defining key metrics to compare
+metrics1 = ['PTS', 'AST', 'REB', 'FG%']
+
+# Grouping data by START_YEAR and Season_type, then calculating mean for each metric
+performance_trends = (nf.groupby(['START_YEAR', 'Season_type'])[metrics1]
+                      .mean()
+                      .reset_index()
+                    )
+
+# Separate data for Regular Season and Playoffs
+regular_season = performance_trends[performance_trends['Season_type'] == 'RegularSeason']
+playoffs = performance_trends[performance_trends['Season_type'] == 'Playoffs']
+
+# Plotting the trends
+import matplotlib.pyplot as plt
+
+plt.figure(figsize=(14, 8))
+
+# Plot each metric for Regular Season and Playoffs
+for metric in metrics1:
+    plt.plot(regular_season['START_YEAR'], regular_season[metric], label=f"Regular Season - {metric}", linestyle='--', marker='o')
+    plt.plot(playoffs['START_YEAR'], playoffs[metric], label=f"Playoffs - {metric}", linestyle='-', marker='x')
+
+# Add labels, legend, and grid
+plt.title("Evolution of Player Performance: Regular Season vs. Playoffs (2012-2024)", fontsize=16)
+plt.xlabel("Year", fontsize=12)
+plt.ylabel("Average Metric Value", fontsize=12)
+plt.legend(title="Metrics and Season Type", fontsize=10)
+plt.grid(alpha=0.3)
+plt.show()
+```
+![image](https://github.com/user-attachments/assets/de7cac8b-35c4-41b8-a812-be0f0af6b6a1)
+
+**Team Analysis:**
+1. Identify the top-performing teams based on cumulative stats like total points, rebounds, and assists.
+```python
+# Defining key metrics to compare stats
+team_metrics = ['PTS', 'REB', 'AST' ]
+# Grouping by team
+team_performance = (nf.groupby(['TEAM'])[team_metrics]
+                    .mean()
+                    .reset_index()
+                    .sort_values(by='PTS', ascending=True)
+                )
+
+# Adding a rank column based on total points
+team_performance['Rank'] = team_performance['PTS'].rank(ascending=True, method='dense').astype(int)
+
+# Display top-performing teams
+top_teams = team_performance.head(10)  # Adjust the number as needed for top-N teams
+print(top_teams)
+
+# Plot the performance of top teams
+import matplotlib.pyplot as plt
+
+plt.figure(figsize=(12, 8))
+x = top_teams['TEAM']
+plt.bar(x, top_teams['PTS'], color='skyblue', label='Total Points')
+plt.bar(x, top_teams['REB'], color='orange', label='Total Rebounds', bottom=top_teams['PTS'])
+plt.bar(x, top_teams['AST'], color='green', label='Total Assists', bottom=top_teams['PTS'] + top_teams['REB'])
+plt.xlabel('Team Name')
+plt.ylabel('Cumulative Stats')
+plt.title('Top Performing Teams Based on Cumulative Stats')
+plt.xticks(rotation=45, ha='right')
+plt.legend()
+plt.tight_layout()
+plt.show()
+```
+![image](https://github.com/user-attachments/assets/f4072dd8-0b2b-4007-a4c8-472d6ef51a86)
+2. Evaluate how team strategies (e.g., reliance on 3-point shooting) evolved over time. 
+To evaluate how team strategies, such as reliance on 3-point shooting, evolved over time, we can analyze metrics like 3-point attempts (3PA), 3-point made (3PM), and 3-point percentage (3P%). 
+We will compare these metrics across years and visualize their trends.
+```python
+import matplotlib.pyplot as plt
+
+# Relevant metrics
+metrics3 = ['FG3A', 'FG3M', 'PTS']
+
+# Grouping by START_YEAR to analyze trends over time
+team_strategy = (
+    nf.groupby('START_YEAR')[metrics3]
+    .sum()
+    .reset_index()
+)
+
+# Adding derived metrics
+team_strategy['3P_Reliance'] = team_strategy['FG3M'] / team_strategy['PTS']
+
+# Plot trends for 3PA, 3PM, and 3P_Reliance
+plt.figure(figsize=(14, 8))
+#plt.plot(team_strategy['START_YEAR'], team_strategy['FG3A'], label='3-Point Attempts', marker='o')
+#plt.plot(team_strategy['START_YEAR'], team_strategy['FG3M'], label='3-Point Made', marker='o')
+plt.plot(team_strategy['START_YEAR'], team_strategy['3P_Reliance'], label='3P Reliance (%)', marker='o')
+
+# Formatting the plot
+plt.title('Evolution of Team Strategies (3-Point Shooting) Over Time', fontsize=14)
+plt.xlabel('Year', fontsize=12)
+plt.ylabel('Values', fontsize=12)
+plt.legend()
+plt.grid(True)
+plt.show()
+```
+![image](https://github.com/user-attachments/assets/904239e0-01ac-43b6-af1c-24b4b321fe3e)
+
