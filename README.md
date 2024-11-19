@@ -341,4 +341,69 @@ plt.show()
 ![image](https://github.com/user-attachments/assets/568a3404-67d2-4bc6-9bdf-e8eeaf2c2301)
 
 ![image](https://github.com/user-attachments/assets/6178382d-b813-46bf-a8da-4aca7edcc93f)
-5. Season 
+
+**Season Comparision**
+1. Comparing average stats between regular season and playoffs
+Comparing average stats between the regular season and playoffs, you can calculating the mean of key metrics like points, rebounds, assists, etc., for each season type and then visualizing the comparison.
+
+```python
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# Selecting key metrics for comparison
+metrics = ['PTS', 'REB', 'AST', 'STL', 'BLK']
+
+# Group by Season_type and calculate the mean of key metrics
+season_comparison = nf.groupby('Season_type')[metrics].mean().reset_index()
+
+# Plotong the comparison
+season_comparison.set_index('Season_type', inplace=True)
+season_comparison.T.plot(kind='bar', figsize=(10, 6), alpha=0.8)
+
+# Adding labels and title
+plt.title('Average Stats: Regular Season vs. Playoffs', fontsize=14)
+plt.xlabel('Metrics', fontsize=12)
+plt.ylabel('Average Value', fontsize=12)
+plt.xticks(rotation=45)
+plt.legend(title='Season Type', loc='upper left')
+plt.grid(axis='y', linestyle='-', alpha=0.6)
+plt.tight_layout()
+plt.show()
+```
+![image](https://github.com/user-attachments/assets/bd760601-67bb-4566-9175-6447bdc6ffb0)
+
+2. Identify players who consistently outperform during playoffs.
+
+To identify players who consistently outperform during playoffs, we can compare their performance in key metrics (e.g., PTS, REB, AST) between the regular season and playoffs. Players who show a significant increase in performance during the playoffs can be highlighted.
+```python
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# Key performance metrics to analyze
+metrics7 = ['PTS', 'REB', 'AST']
+
+# Group by PLAYER and Season_type, then calculate mean for metrics
+player_stats = nf.groupby(['PLAYER', 'Season_type'])[metrics7].mean().reset_index()
+
+# Pivot the data to compare Regular Season and Playoffs
+player_comparison = player_stats.pivot(index='PLAYER', columns='Season_type', values=metrics7).reset_index()
+
+# Calculate the improvement in playoffs (Playoffs - Regular Season)
+for metric in metrics7:
+    player_comparison[(metric + '_Improvement')] = player_comparison[(metric, 'Playoffs')] - player_comparison[(metric, 'RegularSeason')]
+
+# Sorting players by overall improvement (e.g., PTS_Improvement)
+top_performers = player_comparison.sort_values(by='PTS_Improvement', ascending=False).head(10)
+
+# Plotting the top performers
+plt.figure(figsize=(12, 6))
+plt.bar(top_performers['PLAYER'], top_performers['PTS_Improvement'], color='orange', alpha=0.8)
+plt.title('Top Players with Improved Points Per Game in Playoffs', fontsize=14)
+plt.xlabel('Player', fontsize=12)
+plt.ylabel('PPG Improvement', fontsize=12)
+plt.xticks(rotation=45)
+plt.grid(axis='y', linestyle='--', alpha=0.6)
+plt.tight_layout()
+plt.show()
+```
+![image](https://github.com/user-attachments/assets/e679ee3f-8f8f-4ab4-8059-58c0d52894d7)
