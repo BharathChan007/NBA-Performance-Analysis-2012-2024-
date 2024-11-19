@@ -229,3 +229,116 @@ plt.show()
 ```
 ![image](https://github.com/user-attachments/assets/904239e0-01ac-43b6-af1c-24b4b321fe3e)
 
+```python
+import matplotlib.pyplot as plt
+
+# Relevant metrics
+metrics4 = ['FG3A', 'FG3M', 'PTS']
+
+# Grouping by TEAM and START_YEAR
+team_strategy1 = (
+    nf.groupby(['TEAM', 'START_YEAR'])[metrics4]
+    .sum()
+    .reset_index()
+)
+
+# Adding derived metrics
+team_strategy1['3P_Reliance'] = team_strategy1['FG3M'] / team_strategy1['PTS']
+
+# Filter data for top teams (e.g., based on total points or specific teams)
+top_teams = ['GSW', 'CLE', 'LAL', 'BOS']  # Replace with desired teams
+filtered_data = team_strategy1[team_strategy1['TEAM'].isin(top_teams)]
+
+# Plot trends for top teams
+plt.figure(figsize=(14, 8))
+for team in top_teams:
+    team_data = filtered_data[filtered_data['TEAM'] == team]
+    plt.plot(team_data['START_YEAR'], team_data['3P_Reliance'], label=f'{team} 3P Reliance', marker='o')
+
+# Formatting the plot
+plt.title('Evolution of Team Strategies (3-Point Reliance) Over Time', fontsize=14)
+plt.xlabel('Year', fontsize=12)
+plt.ylabel('3-Point Reliance (%)', fontsize=12)
+plt.legend()
+plt.grid(True)
+plt.show()
+```
+![image](https://github.com/user-attachments/assets/2f4094a1-d1cc-4b5e-81de-24ffdc3c6675)
+3. rank no. 1 from each year and his ppg in graph
+To visualize the top-ranked player's PPG for each season, we can extract the player with rank 1 for each year and plot their Points Per Game (PPG) over time.
+```python
+import matplotlib.pyplot as plt
+
+nf['PPG_Rank'] = nf.groupby('START_YEAR')['PPG'].rank(ascending=False, method='dense').astype(int)
+
+top_players = nf[nf['PPG_Rank'] == 1][['START_YEAR', 'PLAYER', 'PPG']]
+
+# Plotting the trend
+plt.figure(figsize=(14, 8))
+plt.plot(top_players['START_YEAR'], top_players['PPG'], marker='o', label="Top Player's PPG")
+
+# Adding labels to the points
+for i, row in top_players.iterrows():
+    plt.text(row['START_YEAR'], row['PPG'], row['PLAYER'], fontsize=8, ha='right')
+plt.title("Top Player's PPG by Season", fontsize=16)
+plt.xlabel("Season (Year)", fontsize=12)
+plt.ylabel("Points Per Game (PPG)", fontsize=12)
+plt.grid(alpha=0.3)
+plt.xticks(rotation=45)
+plt.legend()
+plt.tight_layout()
+plt.show()
+```
+![image](https://github.com/user-attachments/assets/99aa7219-8abe-418d-9161-1d51dd7fcd7f)
+ 4.  
+Steps to Highlight Overachievers
+Compute Efficiency Rating 
+Useing a formula like:
+EFF=(PTS+REB+AST+STL+BLK−(FGA−FGM)−(FTA−FTM)−TO)/MIN
+
+Filtering Players:
+Focusing on players with fewer minutes played, e.g., MIN below a certain threshold (e.g., less than the median).
+
+Visualizing:
+Ploting a scatter plot of MIN vs. EFF.
+Highlight players with high EFF but low MIN.
+
+Rank Overachievers:
+Sort by EFF in descending order for players with fewer minutes.
+
+ ```python
+# Calculating Efficiency Rating (EFF)
+nf['EFF'] = (
+    nf['PTS'] + nf['REB'] + nf['AST'] + nf['STL'] + nf['BLK'] -
+    (nf['FGA'] - nf['FGM']) - (nf['FTA'] - nf['FTM']) - nf['TOV']
+) / nf['MIN']
+
+# Filtering players with fewer minutes (e.g., below median minutes)
+low_minutes_players = nf[nf['MIN'] < nf['MIN'].median()]
+
+# Sorting these players by EFF
+overachievers = low_minutes_players.sort_values(by='EFF', ascending=False)
+
+# Displaying the top 10 overachievers
+print("Top Overachievers (High EFF in Low Minutes):")
+print(overachievers[['PLAYER', 'MIN', 'EFF']].head(10))
+
+# Visualizing Overachievers
+import matplotlib.pyplot as plt
+
+plt.figure(figsize=(10, 6))
+plt.scatter(low_minutes_players['MIN'], low_minutes_players['EFF'], alpha=0.6, color='skyblue', edgecolor='black')
+plt.title('Overachievers: High EFF in Fewer Minutes')
+plt.xlabel('Minutes Played')
+plt.ylabel('Efficiency Rating (EFF)')
+plt.axhline(y=low_minutes_players['EFF'].median(), color='red', linestyle='--', label='Median EFF')
+plt.axvline(x=low_minutes_players['MIN'].median(), color='green', linestyle='--', label='Median MIN')
+plt.legend()
+plt.grid(alpha=0.7)
+plt.tight_layout()
+plt.show()
+```
+![image](https://github.com/user-attachments/assets/568a3404-67d2-4bc6-9bdf-e8eeaf2c2301)
+
+![image](https://github.com/user-attachments/assets/6178382d-b813-46bf-a8da-4aca7edcc93f)
+5. Season 
