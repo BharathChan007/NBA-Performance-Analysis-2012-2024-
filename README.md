@@ -5,7 +5,6 @@
 * Identifying trends and patterns in player and team performance over the last decade.
 * Analyzing the impact of key stats (e.g., 3-point shooting, assists, rebounds) on winning percentages in both regular season and playoffs.
 * Evaluating player efficiency and identify the most valuable players (MVPs) by season, both quantitatively (data-driven) and qualitatively.
-* Building predictive insights to suggest areas where teams or players can improve to increase championship chances.
 * Creating an interactive dashboard to showcase findings dynamically for stakeholder decision-making.
 
 ## Feature Engineering
@@ -407,3 +406,11 @@ plt.tight_layout()
 plt.show()
 ```
 ![image](https://github.com/user-attachments/assets/e679ee3f-8f8f-4ab4-8059-58c0d52894d7)
+
+---------------------------------------------------------------------------------------------------
+## PowerBI Dashboard
+![Screenshot 2024-11-23 002304](https://github.com/user-attachments/assets/015c249d-ba39-48ee-a0d1-e56302af0420)
+
+![Screenshot 2024-11-23 002225](https://github.com/user-attachments/assets/a2d499d0-0fd3-4445-8821-cf2e03b693f4)
+
+
